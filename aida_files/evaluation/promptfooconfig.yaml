@@ -1,0 +1,160 @@
+# AIDA Agent Evaluation Configuration
+# Run with: npx promptfoo eval
+# View results: npx promptfoo view
+
+description: 'AIDA Multi-Agent System Evaluation'
+
+# Input prompts using variable substitution
+prompts:
+  - '{{input_prompt}}'
+
+# Provider configuration - points to our AIDA provider
+providers:
+  - id: file://./provider.py
+    label: AIDA Supervisor Agent
+
+# Default test assertions applied to all tests
+defaultTest:
+  assert:
+    - type: is-json
+      value:
+        type: object
+        properties:
+          success:
+            type: boolean
+          query:
+            type: string
+          response:
+            type: string
+        required: ['success', 'query', 'response']
+
+# Test cases organized by category
+tests:
+  # ============================================
+  # Basic Functionality Tests
+  # ============================================
+  - description: 'Basic greeting test'
+    vars:
+      input_prompt: 'Hello, what can you help me with?'
+    assert:
+      - type: python
+        value: "'response' in output and output.get('success', False)"
+      - type: llm-rubric
+        value: 'Response should be helpful and explain the agent capabilities'
+
+  - description: 'Tools availability test'
+    vars:
+      input_prompt: 'What tools do you have available?'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+      - type: llm-rubric
+        value: 'Response should list or describe available tools and capabilities'
+
+  # ============================================
+  # Project Management Tests
+  # ============================================
+  - description: 'Jira query test'
+    vars:
+      input_prompt: 'List all Jira projects available'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+      - type: llm-rubric
+        value: 'Response should attempt to list Jira projects or explain how to access them'
+
+  - description: 'Create user story test'
+    vars:
+      input_prompt: 'Create a user story for implementing user authentication with login and logout functionality'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+      - type: llm-rubric
+        value: 'Response should contain a properly formatted user story with acceptance criteria'
+
+  # ============================================
+  # Document/RAG Tests
+  # ============================================
+  - description: 'Document search test'
+    vars:
+      input_prompt: 'Search for any documentation about API endpoints'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+
+  - description: 'Knowledge base query'
+    vars:
+      input_prompt: 'What information do you have in your knowledge base?'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+
+  # ============================================
+  # Developer/Technical Tests
+  # ============================================
+  - description: 'Code generation request'
+    vars:
+      input_prompt: 'Generate a Python function to calculate fibonacci numbers'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+      - type: llm-rubric
+        value: 'Response should contain valid Python code for calculating fibonacci numbers'
+
+  - description: 'Technical explanation'
+    vars:
+      input_prompt: 'Explain how to implement a REST API with authentication'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+      - type: llm-rubric
+        value: 'Response should provide technical guidance on REST API implementation with authentication concepts'
+
+  # ============================================
+  # Multi-tool Integration Tests
+  # ============================================
+  - description: 'BRD creation test'
+    vars:
+      input_prompt: 'Create a Business Requirements Document for a customer portal project'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+      - type: llm-rubric
+        value: 'Response should contain a structured BRD with project purpose, scope, and requirements'
+
+  - description: 'Sprint planning test'
+    vars:
+      input_prompt: 'Help me plan a sprint for implementing user profile management'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+      - type: llm-rubric
+        value: 'Response should provide sprint planning guidance with tasks or user stories'
+
+  # ============================================
+  # Edge Cases and Error Handling
+  # ============================================
+  - description: 'Empty query handling'
+    vars:
+      input_prompt: ''
+    assert:
+      - type: python
+        value: "'response' in output or 'error' in output"
+
+  - description: 'Ambiguous query handling'
+    vars:
+      input_prompt: 'Do the thing'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True or 'error' in output"
+      - type: llm-rubric
+        value: 'Response should ask for clarification or provide helpful guidance'
+
+  - description: 'Complex multi-step request'
+    vars:
+      input_prompt: 'Create a Jira epic for payment integration, add 3 user stories, and create a Confluence page documenting the architecture'
+    assert:
+      - type: python
+        value: "output.get('success', False) == True"
+      - type: llm-rubric
+        value: 'Response should acknowledge the multi-step request and attempt to complete or explain the process'

@@ -1,0 +1,19 @@
+{
+    "documents": [
+        {
+            "id": 1,
+            "filename": "JCI_CAR_BRD-FINALSignedOff.pdf",
+            "file_path": "C:\\Users\\10822231\\Workspace\\DA\\AIDA\\backend\\src\\chroma_db\\JCI_CAR_BRD-FINALSignedOff.pdf",
+            "file_type": "pdf document",
+            "status": "stored",
+            "chunks_count": 24,
+            "vectorized_at": "2025-12-10T10:33:29.876978",
+            "persist_directory": "C:\\Users\\10822231\\Workspace\\DA\\AIDA\\backend\\src\\chroma_db",
+            "metadata": {
+                "processed_at": "2025-12-10T10:33:29.874503"
+            }
+        }
+    ],
+    "last_updated": "2025-12-10T10:33:29.876978",
+    "total_documents": 1
+}

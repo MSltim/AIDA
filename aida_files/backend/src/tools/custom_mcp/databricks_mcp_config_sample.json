@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "databricks": {
+      "command": "C:\\AiCOE\\AIDA\\AIDA\\Scripts\\python.exe",
+      "args": [
+        "C:\\AiCOE\\AIDA\\backend\\src\\tools\\custom_mcp\\Databricks_mcp.py"
+      ],
+      "env": {
+        "DATABRICKS_HOST": "https://your-workspace.cloud.databricks.com",
+        "DATABRICKS_TOKEN": "your-databricks-personal-access-token"
+      },
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "atlassian": {
+    "name": "Atlassian MCP (via mcp-remote)",
+    "description": "Official way to connect to Atlassian MCP. Requires Node.js v18+. On first run, a browser opens for Atlassian OAuth. Authentication is handled by mcp-remote automatically!",
+    "command": "npx",
+    "args": ["-y", "mcp-remote", "https://mcp.atlassian.com/v1/sse"],
+    "enabled": true,
+    "requires_oauth": true
+  },
+  "azure-devops": {
+    "name": "Azure DevOps MCP",
+    "description": "Requires Node.js and Azure DevOps PAT token. Set ADO_ORG and ADO_DOMAINS in .env file.",
+    "command": "npx",
+    "args_template": ["-y", "@azure-devops/mcp@latest", "{ado_org}", "-d", "{ado_domains}"],
+    "env_vars": {
+      "ado_org": "ADO_ORG",
+      "ado_domains": "ADO_DOMAINS"
+    },
+    "enabled": true
+  },
+  "trello": {
+    "name": "Trello MCP",
+    "description": "Trello MCP for managing Trello boards and cards.",
+    "script": "tools/custom_mcp/trello_mcp.py",
+    "enabled": true
+  },
+  "rag": {
+    "name": "RAG MCP",
+    "description": "RAG (Retrieval-Augmented Generation) MCP for knowledge base integration.",
+    "script": "tools/custom_mcp/rag_mcp.py",
+    "enabled": true
+  },
+  "sql-mcp": {
+    "name": "SQL MCP",
+    "description": "SQL MCP for database operations.",
+    "script": "tools/custom_mcp/sql_mcp.py",
+    "enabled": true
+  },
+  "powerbi-modeling-mcp": {
+    "name": "Power BI Modeling MCP",
+    "description": "Power BI modeling MCP for data modeling operations. Requires the powerbi-modeling-mcp.exe executable.",
+    "command":  "C:\\Users\\10822231\\Downloads\\PowerBIModelingMCP\\extension\\server\\powerbi-modeling-mcp.exe",
+    "args": ["--start", "--skipconfirmation"],
+    "enabled": true
+  },
+  "databricks-workspace": {
+    "name": "Databricks Workspace Manager",
+    "description": "Manage Databricks clusters, warehouses, notebooks, SQL queries, jobs, and DBFS. Supports: list/start/stop clusters, create/list notebooks, execute SQL, manage jobs, upload files. Requires DATABRICKS_HOST and DATABRICKS_TOKEN in .env file.",
+    "script": "tools/custom_mcp/Databricks_mcp.py",
+    "enabled": true
+  },
+  "databricks-etl": {
+    "name": "Databricks ETL Generator",
+    "description": "Generate production-ready PySpark ETL notebooks from mapping specifications. Creates optimized code for data transformations with support for various source/target types (tables, files, APIs). Includes error handling, logging, and data quality checks.",
+    "script": "tools/custom_mcp/Databricks_ETL_Generator_mcp.py",
+    "enabled": true
+  }
+}

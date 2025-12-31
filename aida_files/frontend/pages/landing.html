@@ -1,0 +1,2609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIDA</title>
+    <!-- Google Fonts - Science Gothic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Science+Gothic:slnt,wdth,wght@0,75..150,100..900&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        html, body {
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #E8E0F0; /* Light lavender/indigo background */
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            font-size: 15px;
+            line-height: 20px;
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            transition: margin-left .3s ease; /* Animate margin from the left, smoother */
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            height: 100vh;
+            max-height: 100vh;
+            width: 250px; /* Expanded by default */
+            position: fixed;
+            z-index: 2;
+            top: 0;
+            left: 0;
+            background-color: #2D1B4E;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+            overflow-x: hidden;
+            overflow-y: auto;
+            transition: 0.3s ease;
+            padding-top: 70px;
+            padding-bottom: 20px;
+            border-top-right-radius: 25px;
+            border-bottom-right-radius: 25px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        #sidebar::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        /* Sidebar Menu Item */
+        .sidebar-menu-item {
+            margin: 5px 10px;
+        }
+
+        .sidebar-menu-header {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .sidebar-menu-header:hover {
+            background-color: #3D2B5E;
+            padding-left: 18px;
+        }
+
+        .sidebar-menu-header:active {
+            background-color: #4D3B6E;
+            transform: scale(0.99);
+        }
+
+        .sidebar-menu-header .menu-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            fill: #ffffff;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-menu-header:hover .menu-icon {
+            transform: scale(1.1);
+        }
+
+        .sidebar-menu-header .menu-title {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-menu-header .expand-icon {
+            width: 16px;
+            height: 16px;
+            fill: #ffffff;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-menu-item.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-menu-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            margin-top: 5px;
+            opacity: 0;
+        }
+
+        .sidebar-menu-item.expanded .sidebar-menu-content {
+            opacity: 1;
+        }
+
+        .sidebar-menu-item.expanded .sidebar-menu-content {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .sidebar-menu-item.expanded .sidebar-menu-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sidebar-menu-content-inner {
+            padding: 10px;
+        }
+
+        /* Form elements in sidebar */
+        .sidebar-form-group {
+            margin-bottom: 12px;
+        }
+
+        .sidebar-form-group label {
+            display: block;
+            font-size: 12px;
+            color: #d4c4e8;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-select, .sidebar-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background-color: rgba(255,255,255,0.08);
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-select:hover, .sidebar-input:hover {
+            border-color: rgba(147, 112, 219, 0.5);
+            background-color: rgba(255,255,255,0.12);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .sidebar-select:focus, .sidebar-input:focus {
+            border-color: #9370DB;
+            background-color: rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 3px rgba(147, 112, 219, 0.2), 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(-1px);
+        }
+
+        .sidebar-select option {
+            background-color: #4B0082;
+            color: #ffffff;
+        }
+
+        .sidebar-range {
+            width: 100%;
+            margin-top: 8px;
+            height: 6px;
+            accent-color: #9370DB;
+            border-radius: 3px;
+            background: linear-gradient(to right, rgba(147, 112, 219, 0.3), rgba(147, 112, 219, 0.1));
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-range:hover {
+            accent-color: #a88be2;
+        }
+
+        .sidebar-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9370DB 0%, #7B5DAD 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(147, 112, 219, 0.4);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-range::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(147, 112, 219, 0.6);
+        }
+
+        .range-value {
+            font-size: 12px;
+            color: #d4c4e8;
+            text-align: right;
+            margin-top: 5px;
+            margin-left: auto;
+            padding: 4px 8px;
+            background: rgba(147, 112, 219, 0.15);
+            border-radius: 4px;
+            display: block;
+            width: fit-content;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        /* ============================================
+           GLOBAL BUTTON ANIMATIONS & EFFECTS
+           ============================================ */
+        @keyframes buttonPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(147, 112, 219, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(147, 112, 219, 0); }
+        }
+
+        @keyframes buttonShine {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes buttonPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.96); }
+            100% { transform: scale(1); }
+        }
+
+        /* Sidebar action buttons */
+        .sidebar-action-btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .sidebar-action-btn:hover::before {
+            left: 100%;
+        }
+
+        .sidebar-action-btn:active {
+            animation: buttonPress 0.2s ease;
+        }
+
+        .sidebar-action-btn.primary {
+            background: linear-gradient(135deg, #5D4B7E 0%, #4D3B6E 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(93, 75, 126, 0.3);
+        }
+
+        .sidebar-action-btn.primary:hover {
+            background: linear-gradient(135deg, #6D5B8E 0%, #5D4B7E 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(93, 75, 126, 0.4);
+        }
+
+        .sidebar-action-btn.secondary {
+            background: rgba(255,255,255,0.08);
+            color: #ffffff;
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-action-btn.secondary:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-action-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Session list */
+        .session-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .session-item {
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #d4c4e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .session-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .session-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #ffffff;
+            transform: translateX(4px);
+        }
+
+        .session-item:hover::before {
+            background: linear-gradient(180deg, #9370DB, #8A2BE2);
+        }
+
+        .session-item:active {
+            transform: translateX(2px) scale(0.99);
+        }
+
+        .session-item.active {
+            background: linear-gradient(135deg, #9370DB 0%, #8A2BE2 100%);
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(147, 112, 219, 0.3);
+        }
+
+        .session-item.active::before {
+            background: #ffffff;
+        }
+
+        /* Tool list */
+        .tool-item {
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #d4c4e8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tool-item:hover {
+            background-color: rgba(255,255,255,0.08);
+            transform: translateX(4px);
+        }
+
+        .tool-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tool-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tool-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #90EE90;
+            flex-shrink: 0;
+        }
+
+        .tool-status.inactive {
+            background-color: #ff6b6b;
+        }
+
+        .tool-toggle-btn {
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-toggle-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+
+        .tool-toggle-btn:active::after {
+            width: 200px;
+            height: 200px;
+        }
+
+        .tool-toggle-btn.add {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .tool-toggle-btn.add:hover {
+            background: linear-gradient(135deg, #34ce57 0%, #2ed8a7 100%);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .tool-toggle-btn.remove {
+            background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+            color: white;
+            box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .tool-toggle-btn.remove:hover {
+            background: linear-gradient(135deg, #e74c5c 0%, #ff7b7b 100%);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        /* OAuth Modal Styles */
+        .oauth-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .oauth-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .oauth-modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .oauth-modal-overlay.active .oauth-modal {
+            transform: scale(1);
+        }
+
+        .oauth-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .oauth-modal-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #0052CC 0%, #2684FF 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .oauth-modal-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        .oauth-modal-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .oauth-modal-body {
+            color: #d4c4e8;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .oauth-modal-body p {
+            margin-bottom: 15px;
+        }
+
+        .oauth-modal-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .oauth-modal-body li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .oauth-modal-body li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #90EE90;
+        }
+
+        .oauth-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .oauth-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .oauth-btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #d4c4e8;
+        }
+
+        .oauth-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .oauth-btn-confirm {
+            background: linear-gradient(135deg, #0052CC 0%, #2684FF 100%);
+            color: white;
+        }
+
+        .oauth-btn-confirm:hover {
+            background: linear-gradient(135deg, #0066FF 0%, #3690FF 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 82, 204, 0.4);
+        }
+
+        .tools-loading {
+            text-align: center;
+            padding: 15px 10px;
+            color: #d4c4e8;
+            font-size: 12px;
+            animation: fadeInOut 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Main content area that will be pushed */
+        #main {
+            transition: margin-left .3s ease;
+            padding: 16px;
+            padding-right: 32px;
+            padding-left: 16px;
+            width: calc(100vw - 266px - 48px); /* Calculate width minus sidebar and padding */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 266px; /* Offset for expanded sidebar (250px + 16px spacing) */
+            margin-right: 0;
+            overflow: hidden; /* Disable scrolling on main area */
+            height: 100vh;
+        }
+
+        /* Sidebar toggle button */
+        .openbtn {
+            font-size: 20px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            color: #333;
+            padding: 12px;
+            border: none;
+            position: fixed;
+            top: 20px;
+            left: 270px; /* Positioned next to expanded sidebar */
+            z-index: 3;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(180deg); /* Rotated by default */
+        }
+
+        .openbtn:hover {
+            background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        .openbtn:active {
+            transform: rotate(180deg) scale(0.95);
+        }
+        
+        .openbtn.is-collapsed {
+            left: 20px;
+            transform: rotate(0deg);
+        }
+
+        .openbtn.is-collapsed:hover {
+            transform: rotate(0deg) scale(1.1);
+        }
+
+        .openbtn.is-collapsed:active {
+            transform: rotate(0deg) scale(0.95);
+        }
+        /* Chat container */
+        .chat-container {
+            width: 100%; /* Full width */
+            max-width: 1400px; /* Maximum width cap */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: calc(100vh - 60px); /* Fixed height for proper scrolling */
+            justify-content: flex-start; /* Align to top */
+            transition: all 0.3s ease;
+            margin-top: 20px; /* Original top margin */
+            margin-bottom: 0; /* Remove bottom margin */
+            overflow: visible; /* Allow content to be visible */
+            padding: 0 15px; /* Add horizontal padding */
+            box-sizing: border-box;
+        }
+
+        .chat-container.chat-active {
+            align-items: stretch; /* Full width when chat is active */
+            justify-content: space-between; /* Space between messages and input */
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            flex-shrink: 0; /* Keep header size fixed */
+        }
+
+        .chat-container.chat-active .chat-header {
+            display: none; /* Hide header when chat is active */
+        }
+
+        .chat-title {
+            font-family: "Science Gothic", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 300;
+            font-style: normal;
+            font-variation-settings: "slnt" 0, "wdth" 100, "CTRS" 0;
+            font-size: 100px;
+            color: #4B0082; /* Indigo title */
+            transition: font-size 0.3s ease;
+        }
+
+        /* Hide title only when chat is active */
+        .chat-container.chat-active .chat-title {
+            display: none;
+        }
+
+        /* Chat messages area */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: transparent;
+            border-radius: 0;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 15px;
+            width: 100%; /* Full width for messages */
+            min-height: 0; /* Allow shrinking */
+            max-height: calc(100vh - 200px); /* Maximum height with space for input */
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Edge */
+        }
+
+        .chat-messages.active {
+            display: flex; /* Show when chat is active */
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 90%; /* Wider messages */
+            padding: 16px 20px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            max-height: none; /* Remove max height restriction */
+            line-height: 1.6;
+        }
+
+        .message-content::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .message.user .message-content {
+            background-color: #4B0082;
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+            text-align: left; /* Left align user text */
+            box-shadow: 0 4px 12px rgba(45, 27, 78, 0.35);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message.user .message-content:hover {
+            box-shadow: 0 6px 16px rgba(45, 27, 78, 0.45);
+            transform: translateY(-1px);
+        }
+
+        .message.assistant .message-content {
+            background-color: #ffffff;
+            color: #000000;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: left; /* Left align assistant text */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message.assistant .message-content:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+
+        /* Markdown styling for assistant responses */
+        .message.assistant .message-content h1,
+        .message.assistant .message-content h2,
+        .message.assistant .message-content h3,
+        .message.assistant .message-content h4 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            color: #4B0082;
+        }
+
+        .message.assistant .message-content h1 { font-size: 1.5em; }
+        .message.assistant .message-content h2 { font-size: 1.3em; }
+        .message.assistant .message-content h3 { font-size: 1.1em; }
+
+        .message.assistant .message-content p {
+            margin: 8px 0;
+        }
+
+        .message.assistant .message-content ul,
+        .message.assistant .message-content ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .message.assistant .message-content li {
+            margin: 4px 0;
+        }
+
+        .message.assistant .message-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        .message.assistant .message-content pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .message.assistant .message-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .message.assistant .message-content blockquote {
+            border-left: 4px solid #4B0082;
+            margin: 12px 0;
+            padding-left: 16px;
+            color: #666;
+        }
+
+        .message.assistant .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+        }
+
+        .message.assistant .message-content th,
+        .message.assistant .message-content td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .message.assistant .message-content th {
+            background-color: #4B0082;
+            color: white;
+        }
+
+        .message-metadata {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .chat-input-area {
+            background-color: #4B0082; /* Darker muted indigo input area */
+            border-radius: 30px;
+            padding: 8px 15px;
+            box-shadow: 0 8px 24px rgba(45, 27, 78, 0.5);
+            display: flex;
+            flex-direction: column; /* Changed to column to stack attachments above input */
+            align-items: center;
+            gap: 10px;
+            min-height: 50px;
+            width: 900px; /* Increased width */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0; /* Prevent input area from shrinking */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin-bottom: 30px; /* Add space from bottom of screen */
+        }
+
+        .chat-input-area:hover {
+            box-shadow: 0 6px 20px rgba(45, 27, 78, 0.5);
+            border-color: rgba(147, 112, 219, 0.3);
+        }
+
+        .chat-input-area:focus-within {
+            box-shadow: 0 6px 25px rgba(45, 27, 78, 0.6), 0 0 0 2px rgba(147, 112, 219, 0.3);
+            border-color: rgba(147, 112, 219, 0.5);
+        }
+
+        .chat-container.chat-active .chat-input-area {
+            padding: 8px 15px;
+            margin-top: auto; 
+            margin-bottom: 10px; /* Add gap below the input area */
+            width: calc(100% - 30px); /* Account for container padding */
+            min-height: 50px;
+            box-sizing: border-box;
+        }
+
+        .message-input {
+            flex: 1; /* Take remaining space */
+            border: none;
+            padding: 10px;
+            font-size: 15px;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            line-height: 20px;
+            background-color: transparent;
+            color: #ffffff; /* Text color for black background */
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+            min-height: 35px;
+            max-height: 35px;
+            overflow: hidden;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        .message-input::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .chat-container.chat-active .message-input {
+            padding: 8px 10px;
+            max-height: 35px;
+            min-height: 35px;
+        }
+        
+        .message-input::placeholder {
+            color: #a0a0a0;
+        }
+
+        .attach-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #ffffff;
+            background-color: transparent;
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+        }
+        
+        .attach-btn:hover {
+            color: #9370DB;
+            background-color: rgba(147, 112, 219, 0.1);
+            transform: scale(1.1);
+        }
+
+        .attach-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Attachments container */
+        .attachments-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            min-height: 0;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .attachments-container.has-attachments {
+            max-height: 200px;
+            padding: 8px 0;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        .attachments-container.has-attachments::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        /* Attachment chip */
+        .attachment-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 200px;
+            animation: slideIn 0.3s ease;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .attachment-chip.success {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(144, 238, 144, 0.3);
+        }
+
+        .attachment-chip.loading {
+            background-color: rgba(147, 112, 219, 0.15);
+            border-color: rgba(147, 112, 219, 0.3);
+        }
+
+        .attachment-chip.error {
+            background-color: rgba(255, 107, 107, 0.1);
+            border-color: rgba(255, 107, 107, 0.3);
+            opacity: 0.6;
+            animation: fadeError 0.3s ease;
+        }
+
+        @keyframes fadeError {
+            0% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .suggestions-container {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 900px;
+            justify-content: center;
+            padding: 15px 10px;
+            background-color: transparent;
+            border-top: none;
+            border-bottom: 1px solid rgba(147, 112, 219, 0.2);
+            animation: slideInSuggestions 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .chat-container.chat-active .suggestions-container {
+            width: calc(100% - 30px);
+        }
+
+        @keyframes slideInSuggestions {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .suggestion-card {
+            background: rgba(147, 112, 219, 0.15);
+            border: 1px solid rgba(147, 112, 219, 0.3);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .suggestion-card:hover {
+            background: rgba(147, 112, 219, 0.25);
+            border-color: rgba(147, 112, 219, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(147, 112, 219, 0.2);
+        }
+
+        .suggestion-card:active {
+            transform: translateY(0);
+        }
+
+        .suggestion-icon {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .suggestion-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #9370DB;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #9370DB;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .attachment-chip .chip-icon {
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .attachment-chip .chip-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        .attachment-chip .chip-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .attachment-chip .chip-size {
+            font-size: 10px;
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+
+        .attachment-chip .remove-btn {
+            background: none;
+            border: none;
+            color: currentColor;
+            cursor: pointer;
+            padding: 0;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .attachment-chip .remove-btn:hover {
+            opacity: 1;
+        }
+
+        /* Input row */
+        .input-row {
+            display: flex;
+            flex-direction: row; /* Single row layout */
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            min-height: 50px;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #6b6b6b 0%, #8e8e8e 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: not-allowed;
+            font-size: 15px;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 500;
+            line-height: 20px;
+            opacity: 0.5;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .send-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .send-button.enabled {
+            background: linear-gradient(135deg, #5D4B7E 0%, #4D3B6E 100%);
+            cursor: pointer;
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(93, 75, 126, 0.4);
+        }
+
+        .send-button.enabled:hover {
+            background: linear-gradient(135deg, #6D5B8E 0%, #5D4B7E 100%);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(93, 75, 126, 0.5);
+        }
+
+        .send-button.enabled:hover::before {
+            left: 100%;
+        }
+
+        .send-button.enabled:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .send-button.loading {
+            cursor: wait;
+            animation: buttonPulse 1.5s infinite;
+        }
+
+        /* Sample Queries Section - Google AI Studio Style */
+        .sample-queries-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 70px; /* Increased spacing before input area */
+            transition: all 0.3s ease;
+            flex-shrink: 0; /* Keep section size fixed */
+        }
+
+        .chat-container.chat-active .sample-queries-section {
+            display: none; /* Hide when chat is active */
+        }
+
+        .query-categories {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px; /* Reduced from default */
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .category-tab {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid #4B0082;
+            background-color: transparent;
+            color: #4B0082;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-tab::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(75, 0, 130, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+
+        .category-tab:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .category-tab:hover {
+            border-color: #9370DB;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(75, 0, 130, 0.2);
+        }
+
+        .category-tab:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .category-tab.active {
+            background: linear-gradient(135deg, #4B0082 0%, #6B5B95 100%);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(75, 0, 130, 0.3);
+        }
+
+        .category-tab.active:hover {
+            background: linear-gradient(135deg, #5a0f9a 0%, #7b6ba5 100%);
+        }
+
+        .category-tab .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .category-tab.active .dot {
+            display: inline-block;
+            background-color: #90EE90;
+            box-shadow: 0 0 8px rgba(144, 238, 144, 0.6);
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 8px rgba(144, 238, 144, 0.6);
+            }
+            50% {
+                transform: scale(1.2);
+                box-shadow: 0 0 12px rgba(144, 238, 144, 0.8);
+            }
+        }
+
+        .query-cards-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columns grid */
+            gap: 12px; /* Reduced gap */
+            width: 100%;
+        }
+
+        .query-card {
+            display: flex;
+            flex-direction: column; /* Stack vertically for grid cards */
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px; /* Reduced from 20px */
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(45, 27, 78, 0.08);
+            border: 2px solid transparent;
+            min-height: 100px; /* Reduced from 120px */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .query-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(93, 75, 126, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .query-card:hover::before {
+            left: 100%;
+        }
+
+        .query-card:hover {
+            box-shadow: 0 10px 30px rgba(45, 27, 78, 0.2);
+            border-color: #5D4B7E;
+            transform: translateY(-6px) scale(1.02);
+        }
+
+        .query-card:active {
+            transform: translateY(-2px) scale(0.99);
+        }
+
+        .query-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .query-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .query-icon.confluence { background-color: #0052CC; }
+        .query-icon.jira { background-color: #0052CC; }
+        .query-icon.azure { background-color: #0078D4; }
+        .query-icon.project { background-color: #6B5B95; }
+        .query-icon.developer { background-color: #28A745; }
+        .query-icon.rag { background-color: #FF6B35; }
+
+        .query-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+
+        .query-content {
+            flex: 1;
+            text-align: left;
+        }
+
+        .query-title {
+            font-size: 13px; /* Reduced from 14px */
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .query-title .new-badge {
+            background-color: #90EE90;
+            color: #1a1a1a;
+            font-size: 9px; /* Reduced from 10px */
+            font-weight: 500;
+            padding: 2px 5px; /* Reduced padding */
+            border-radius: 10px;
+        }
+
+        .query-description {
+            font-size: 11px; /* Reduced from 12px */
+            color: #666;
+            line-height: 1.4; /* Reduced from 1.5 */
+            flex: 1;
+        }
+
+        .query-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto; /* Push to bottom of card */
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .query-action-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid #e0e0e0;
+            background-color: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .query-action-btn:hover {
+            background-color: #f5f5f5;
+            border-color: #4B0082;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(75, 0, 130, 0.15);
+        }
+
+        .query-action-btn:active {
+            transform: translateY(0) scale(0.95);
+            box-shadow: 0 2px 4px rgba(75, 0, 130, 0.1);
+        }
+
+        .query-action-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: #666;
+            transition: fill 0.2s ease;
+        }
+
+        .query-action-btn:hover svg {
+            fill: #4B0082;
+        }
+
+        /* Responsive grid for smaller screens */
+        @media (max-width: 1200px) {
+            .query-cards-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .query-cards-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* AIDA Thinking Message */
+        .aida-thinking-message {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 18px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            animation: fadeIn 0.3s ease-in;
+            align-self: flex-start;
+        }
+
+        .aida-thinking-spinner {
+            border: 2px solid rgba(75, 0, 130, 0.2);
+            border-top: 2px solid #4B0082;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 0.8s linear infinite;
+            flex-shrink: 0;
+        }
+
+        .aida-thinking-text {
+            color: #4B0082;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <!-- Chat Section -->
+        <div class="sidebar-menu-item expanded">
+            <div class="sidebar-menu-header" onclick="toggleMenuItem(this)">
+                <span class="menu-title">
+                    <svg class="menu-icon" viewBox="0 -960 960 960"><path d="M120-160v-600q0-33 23.5-56.5T200-840h480q33 0 56.5 23.5T760-760v203q-10-2-20-2.5t-20-.5q-10 0-20 .5t-20 2.5v-203H200v400h283q-2 10-2.5 20t-.5 20q0 10 .5 20t2.5 20H240L120-160Zm160-440h320v-80H280v80Zm0 160h200v-80H280v80Zm400 280v-120H560v-80h120v-120h80v120h120v80H760v120h-80ZM200-360v-400 400Z"/></svg>
+                    Chat
+                </span>
+                <svg class="expand-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="sidebar-menu-content">
+                <div class="sidebar-menu-content-inner">
+                    <button class="sidebar-action-btn primary" onclick="startNewChat()">
+                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        New Chat
+                    </button>
+                    <button class="sidebar-action-btn secondary" onclick="clearChat()">
+                        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        Clear Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Section -->
+        <div class="sidebar-menu-item">
+            <div class="sidebar-menu-header" onclick="toggleMenuItem(this)">
+                <span class="menu-title">
+                    <svg class="menu-icon" viewBox="0 -960 960 960"><path d="M320-160q-33 0-56.5-23.5T240-240v-120h120v-90q-35-2-66.5-15.5T236-506v-44h-46L60-680q36-46 89-65t107-19q27 0 52.5 4t51.5 15v-55h480v520q0 50-35 85t-85 35H320Zm120-200h240v80q0 17 11.5 28.5T720-240q17 0 28.5-11.5T760-280v-440H440v24l240 240v56h-56L510-514l-8 8q-14 14-29.5 25T440-464v104ZM224-630h92v86q12 8 25 11t27 3q23 0 41.5-7t36.5-25l8-8-56-56q-29-29-65-43.5T256-684q-20 0-38 3t-36 9l42 42Zm376 350H320v40h286q-3-9-4.5-19t-1.5-21Zm-280 40v-40 40Z"/></svg>
+                    Session
+                </span>
+                <svg class="expand-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="sidebar-menu-content">
+                <div class="sidebar-menu-content-inner">
+                    <div class="session-list" id="sessionList">
+                        <div class="session-item active">
+                            <span>Current Session</span>
+                            <span style="font-size:10px; opacity:0.7">Now</span>
+                        </div>
+                    </div>
+                    <button class="sidebar-action-btn secondary" style="margin-top:10px" onclick="loadSession()">
+                        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        Load Session
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Section -->
+        <div class="sidebar-menu-item">
+            <div class="sidebar-menu-header" onclick="toggleMenuItem(this)">
+                <span class="menu-title">
+                    <svg class="menu-icon" viewBox="0 -960 960 960"><path d="M240-160v-80l260-240-260-240v-80h480v120H431l215 200-215 200h289v120H240Z"/></svg>
+                    Tools
+                </span>
+                <svg class="expand-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="sidebar-menu-content">
+                <div class="sidebar-menu-content-inner">
+                    <div id="toolsList" class="tools-list">
+                        <div class="tools-loading">Loading tools...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Section -->
+        <div class="sidebar-menu-item">
+            <div class="sidebar-menu-header" onclick="toggleMenuItem(this)">
+                <span class="menu-title">
+                    <svg class="menu-icon" viewBox="0 -960 960 960"><path d="M120-160v-80h110l-16-14q-52-46-73-105t-21-119q0-111 66.5-197.5T360-790v84q-72 26-116 88.5T200-478q0 45 17 87.5t53 78.5l10 10v-98h80v240H120Zm717-360h-81q-5-35-21.5-67T690-648l-10-10v98h-80v-240h240v80H730l16 14q41 42 63 89t28 97ZM680-40l-12-60q-12-5-22.5-10.5T624-124l-58 18-40-68 46-40q-2-14-2-26t2-26l-46-40 40-68 58 18q11-8 21.5-13.5T668-380l12-60h80l12 60q12 5 22.5 11t21.5 15l58-20 40 70-46 40q2 12 2 25t-2 25l46 40-40 68-58-18q-11 8-21.5 13.5T772-100l-12 60h-80Zm40-120q33 0 56.5-23.5T800-240q0-33-23.5-56.5T720-320q-33 0-56.5 23.5T640-240q0 33 23.5 56.5T720-160Z"/></svg>
+                    Model
+                </span>
+                <svg class="expand-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="sidebar-menu-content">
+                <div class="sidebar-menu-content-inner">
+                    <div class="sidebar-form-group">
+                        <label>Provider</label>
+                        <select class="sidebar-select" id="providerSelect" onchange="updateModelOptions()">
+                            <option value="azure">Azure OpenAI</option>
+                            <option value="google">Google Gemini</option>
+                            <option value="ollama">Ollama (Local)</option>
+                        </select>
+                    </div>
+                    <div class="sidebar-form-group">
+                        <label>Model</label>
+                        <select class="sidebar-select" id="modelSelect">
+                            <option value="gpt-4o-ReCast">GPT-4o ReCast</option>
+                            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                            <option value="gpt-4o">GPT-4o</option>
+                            <option value="gpt-4o-mini">GPT-4o Mini</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        </select>
+                    </div>
+                    <div class="sidebar-form-group">
+                        <label>Temperature</label>
+                        <input type="range" class="sidebar-range" id="temperatureRange" min="0" max="1" step="0.1" value="0.3" oninput="updateTemperatureDisplay()">
+                        <div class="range-value" id="temperatureValue">0.3</div>
+                    </div>
+                    <button class="sidebar-action-btn primary" onclick="applyModelSettings()">
+                        Apply Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main">
+        <button class="openbtn" onclick="toggleNav()">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M120-240v-80h520v80H120Zm0-200v-80h400v80H120Zm0-200v-80h520v80H120Z"/></svg>
+        </button>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h1 class="chat-title">AIDA</h1>
+            </div>
+            
+            <!-- Sample Queries Section -->
+            <div class="sample-queries-section" id="sampleQueriesSection">
+                <div class="query-categories">
+                    <button class="category-tab active" onclick="filterQueries('confluence')">Confluence</button>
+                    <button class="category-tab" onclick="filterQueries('project')">Project Mgmt</button>
+                    <button class="category-tab" onclick="filterQueries('developer')">Developer</button>
+                    <button class="category-tab" onclick="filterQueries('rag')">Documents</button>
+                </div>
+                
+                <div class="query-cards-container" id="queryCardsContainer">
+                    <!-- Cards will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Chat Messages Area -->
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be added here dynamically -->
+            </div>
+            
+            <!-- Suggestions container (outside input area) -->
+            <div class="suggestions-container" id="suggestionsContainer" style="display: none;">
+                <!-- Suggestion cards will be populated by JavaScript -->
+            </div>
+            
+            <div class="chat-input-area">
+                <!-- Attachments container -->
+                <div class="attachments-container" id="attachmentsContainer">
+                    <!-- Attachment chips will be added here -->
+                </div>
+                
+                <!-- Input row -->
+                <div class="input-row">
+                    <button class="attach-btn" onclick="handleAttachment()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
+                        </svg>
+                    </button>
+                    <textarea class="message-input" id="messageInput" placeholder="Type your message..." oninput="toggleSendButton()" onkeydown="handleEnterKey(event)"></textarea>
+                    <button class="send-button" id="sendButton" onclick="deployMessage()">
+                        <svg id="sendIcon" xmlns="http://www.w3.org/2000/svg" height="21px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                            <path d="M441-82q-76-8-141.5-41.5t-114.5-87Q136-264 108-333T80-480q0-157 104.5-270T441-878v81q-119 15-200 104.5T160-480q0 123 81 212.5T441-163v81Zm0-198v-247L337-423l-56-57 200-200 200 200-57 56-103-103v247h-80Zm80 198v-81q44-5 83.5-22t72.5-43l57 58q-45 36-99 59T521-82Zm155-650q-33-26-72-43t-83-22v-81q60 6 114 29t99 59l-58 58Zm114 505-57-57q26-33 43-72.5t22-83.5h81q-6 60-29.5 114T790-227Zm8-293q-5-44-22-83.5T733-676l57-57q36 45 59.5 99T879-520h-81Z"/>
+                        </svg>
+                        <div id="loadingSpinner" class="spinner" style="display: none;"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample queries data organized by category
+        const sampleQueries = [
+            // Confluence
+            { id: 1, category: 'confluence', icon: 'confluence', title: 'Create Documentation', isNew: true,
+              description: 'Create technical documentation and publish to Confluence',
+              query: 'Create a comprehensive Business Requirements Document (BRD) for the Next-Gen Customer Portal. The BRD must include: Objectives – Define the purpose and goals of the portal. Stakeholders – List all key stakeholders and their roles. Scope – Clearly outline what is included and excluded. Functional Requirements – Provide detailed specifications for: Multi-Factor Authentication (MFA) with granular Role-Based Access Control (RBAC). Real-time bi-directional API integrations with ERP (SAP) and CRM (Salesforce). An AI-driven personalization engine for tailored user experiences. Secure document handling fully compliant with GDPR, PCI DSS, and ISO 27001. Ensure the document is well-structured with headings, tables, and diagrams where appropriate and publish it in my Confluence space' },
+            { id: 2, category: 'confluence', icon: 'confluence', title: 'List all the Document in Space', isNew: false,
+              description: 'List all document titles in a specific Confluence space',
+              query: 'List all my space from confluence' },
+            { id: 3, category: 'confluence', icon: 'confluence', title: 'Meeting Notes', isNew: false,
+              description: 'Format and publish meeting notes to Confluence',
+              query: 'Create meeting notes for our sprint retrospective and publish to Confluence' },
+            
+            // Project Management
+            { id: 4, category: 'project', icon: 'project', title: 'BRD to User Stories', isNew: true,
+              description: 'Read BRD from Confluence and create user stories in Trello',
+              query: 'Read the Business Requirements Document (BRD) for Next-Gen Customer Portal from my Confluence space and create user stories and post in today\'s Trello board' },
+            { id: 5, category: 'project', icon: 'project', title: 'Summarize Today\'s Tasks', isNew: true,
+              description: 'Get a summary of all cards from today\'s Trello board with status updates',
+              query: 'Retrieve all cards from today\'s Trello board, analyze their status, priority, and progress, and provide a comprehensive summary including: What tasks are in progress, What tasks are completed, What tasks are pending, Blockers or issues preventing progress, Next steps recommended for each card. Group the summary by status for better clarity' },
+            { id: 6, category: 'project', icon: 'project', title: 'Project Charter', isNew: true,
+              description: 'Create a comprehensive project charter document',
+              query: 'Create a project charter for the mobile app development project with objectives, scope, and stakeholders' },
+            
+            // Developer
+            { id: 9, category: 'developer', icon: 'developer', title: 'Generate API Code', isNew: true,
+              description: 'Generate REST API endpoints with proper error handling',
+              query: 'Generate Python FastAPI code for user CRUD operations with validation and error handling' },
+            { id: 10, category: 'developer', icon: 'developer', title: 'SQL Optimization', isNew: false,
+              description: 'Optimize SQL queries for better performance',
+              query: 'Analyze and optimize this SQL query for better performance with indexing recommendations' },
+            { id: 11, category: 'developer', icon: 'developer', title: 'Code Documentation', isNew: false,
+              description: 'Generate documentation for code',
+              query: 'Generate comprehensive documentation for my Python module with examples and use cases' },
+            
+            // Documents (RAG)
+            { id: 12, category: 'rag', icon: 'rag', title: 'Summarize Document', isNew: true,
+              description: 'Summarize uploaded documents using RAG',
+              query: '@doc Summarize the key points from my uploaded requirements document' },
+            { id: 13, category: 'rag', icon: 'rag', title: 'Search Documents', isNew: false,
+              description: 'Search through indexed documents for specific information',
+              query: '@rag Find all sections related to authentication in my uploaded documents' },
+            { id: 14, category: 'rag', icon: 'rag', title: 'Compare Documents', isNew: false,
+              description: 'Compare and contrast multiple documents',
+              query: '@doc Compare the requirements from v1 and v2 documents and highlight the differences' }
+        ];
+
+        // Icon SVGs for each category
+        const iconSVGs = {
+            confluence: '<svg viewBox="0 0 24 24"><path d="M4.39 18.47c-.29.44-.54.92-.54.92-.21.37-.1.85.27 1.06l3.91 2.19c.37.21.85.08 1.06-.29 0 0 .26-.46.56-.92 1.36-2.08 2.69-1.81 5.21-.31l3.89 2.31c.37.22.85.09 1.07-.28l2.24-3.86c.21-.37.08-.85-.29-1.07l-3.86-2.29c-4.66-2.76-8.57-2.13-13.52 2.54zM19.61 5.53c.29-.44.54-.92.54-.92.21-.37.1-.85-.27-1.06L16.03 1.4c-.37-.21-.85-.08-1.06.29 0 0-.26.46-.56.92-1.36 2.08-2.69 1.81-5.21.31L5.31.61c-.37-.22-.85-.09-1.07.28L2.01 4.75c-.21.37-.08.85.29 1.07l3.86 2.29c4.66 2.76 8.57 2.13 13.45-2.58z"/></svg>',
+            jira: '<svg viewBox="0 0 24 24"><path d="M12.006 2.007L1.5 12.506l4.243 4.242 6.263-6.262 6.263 6.262 4.243-4.242L12.006 2.007zm0 4.95l-4.95 4.949 4.95 4.95 4.95-4.95-4.95-4.949z"/></svg>',
+            azure: '<svg viewBox="0 0 24 24"><path d="M13.05 4.24L6.56 18.05L2 18l5.09-8.76L13.05 4.24M13.75 5.33l2.32 6.67l-5.29 5.25l6.84 1.52L22 18l-8.25-12.67"/></svg>',
+            project: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg>',
+            developer: '<svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>',
+            rag: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zm-9-4h6v2H9v-2zm0-4h6v2H9v-2z"/></svg>'
+        };
+
+        // Render query cards in grid layout
+        function renderQueryCards(category = 'confluence') {
+            const container = document.getElementById('queryCardsContainer');
+            const filteredQueries = sampleQueries.filter(q => q.category === category);
+            
+            container.innerHTML = filteredQueries.map(query => `
+                <div class="query-card" onclick="useQuery('${query.query.replace(/'/g, "\\'")}')">
+                    <div class="query-card-header">
+                        <div class="query-icon ${query.icon}">
+                            ${iconSVGs[query.icon]}
+                        </div>
+                        <div class="query-title">
+                            ${query.title}
+                            ${query.isNew ? '<span class="new-badge">New</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="query-description">${query.description}</div>
+                    <div class="query-actions">
+                        <button class="query-action-btn" onclick="event.stopPropagation(); copyQuery('${query.query.replace(/'/g, "\\'")}')" title="Copy">
+                            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                        </button>
+                        <button class="query-action-btn" onclick="event.stopPropagation(); useQuery('${query.query.replace(/'/g, "\\'")}')" title="Use">
+                            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter queries by category
+        function filterQueries(category) {
+            // Update active tab
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.closest('.category-tab').classList.add('active');
+            
+            // Render filtered cards
+            renderQueryCards(category);
+        }
+
+        // Use a query - populate input and optionally send
+        function useQuery(query) {
+            const messageInput = document.getElementById('messageInput');
+            const chatMessages = document.getElementById("chatMessages");
+            const chatContainer = document.querySelector(".chat-container");
+            
+            // Populate the input
+            messageInput.value = query;
+            toggleSendButton();
+            
+            // Show chat interface when query is selected
+            if (!chatMessages.classList.contains('active')) {
+                chatMessages.classList.add('active');
+                chatContainer.classList.add('chat-active');
+            }
+            
+            // Find the selected query object to get its category
+            const selectedQuery = sampleQueries.find(q => q.query === query);
+            if (selectedQuery) {
+                // Get other queries from the same category (excluding the selected one)
+                const otherQueries = sampleQueries.filter(q => 
+                    q.category === selectedQuery.category && q.query !== query
+                );
+                
+                // Show suggestions if there are other queries
+                if (otherQueries.length > 0) {
+                    displaySuggestions(otherQueries);
+                }
+            }
+            
+            messageInput.focus();
+        }
+
+        // Copy query to clipboard
+        function copyQuery(query) {
+            navigator.clipboard.writeText(query).then(() => {
+                // Show brief feedback
+                const btn = event.target.closest('.query-action-btn');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="#28A745"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+                setTimeout(() => { btn.innerHTML = originalHTML; }, 1000);
+            });
+        }
+
+        // Display suggestions based on selected query
+        function displaySuggestions(suggestions) {
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            
+            if (!suggestions || suggestions.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            suggestionsContainer.innerHTML = suggestions.map(suggestion => `
+                <div class="suggestion-card" onclick="useQuery('${suggestion.query.replace(/'/g, "\\'")}')">
+                    <div class="suggestion-icon">
+                        ${iconSVGs[suggestion.icon]}
+                    </div>
+                    <span>${suggestion.title}</span>
+                </div>
+            `).join('');
+            
+            suggestionsContainer.style.display = 'flex';
+        }
+
+        // Hide suggestions
+        function hideSuggestions() {
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            suggestionsContainer.style.display = 'none';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderQueryCards('confluence');
+            loadTools(); // Load tools from backend
+        });
+
+        // Toggle sidebar menu item expand/collapse
+        function toggleMenuItem(header) {
+            const menuItem = header.closest('.sidebar-menu-item');
+            menuItem.classList.toggle('expanded');
+        }
+
+        // Sidebar navigation toggle
+        function toggleNav() {
+            const sidebar = document.getElementById("sidebar");
+            const main = document.getElementById("main");
+            const toggleButton = document.querySelector(".openbtn");
+
+            // Check current state - sidebar starts expanded (250px in CSS)
+            const isExpanded = sidebar.offsetWidth > 0;
+            
+            if (isExpanded) {
+                // Collapse the sidebar
+                sidebar.style.width = "0px";
+                main.style.marginLeft = "16px"; /* Same spacing as right side */
+                toggleButton.classList.add("is-collapsed");
+            } else {
+                // Expand the sidebar
+                sidebar.style.width = "250px";
+                main.style.marginLeft = "266px"; /* 250px sidebar + 16px spacing */
+                toggleButton.classList.remove("is-collapsed");
+            }
+        }
+
+        // Chat actions
+        function startNewChat() {
+            const chatMessages = document.getElementById('chatMessages');
+            const chatContainer = document.querySelector('.chat-container');
+            const sampleQueriesSection = document.getElementById('sampleQueriesSection');
+            
+            chatMessages.innerHTML = '';
+            chatMessages.classList.remove('active');
+            chatContainer.classList.remove('chat-active');
+            if (sampleQueriesSection) {
+                sampleQueriesSection.style.display = 'flex';
+            }
+        }
+
+        function clearChat() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+        }
+
+        // Session actions
+        function loadSession() {
+            alert('Load session functionality - Coming soon!');
+        }
+
+        // =============================================================================
+        // TOOLS MANAGEMENT
+        // =============================================================================
+        
+        // Load and display all tools
+        async function loadTools() {
+            const toolsList = document.getElementById('toolsList');
+            toolsList.innerHTML = '<div class="tools-loading">Loading tools...</div>';
+            
+            try {
+                const response = await fetch('/api/tools');
+                const data = await response.json();
+                
+                if (data.success && data.tools) {
+                    renderTools(data.tools);
+                } else {
+                    toolsList.innerHTML = '<div class="tools-loading">Failed to load tools</div>';
+                }
+            } catch (error) {
+                console.error('Error loading tools:', error);
+                toolsList.innerHTML = '<div class="tools-loading">Error loading tools</div>';
+            }
+        }
+        
+        // Render tools list with Add/Remove buttons
+        function renderTools(tools) {
+            const toolsList = document.getElementById('toolsList');
+            
+            if (tools.length === 0) {
+                toolsList.innerHTML = '<div class="tools-loading">No tools available</div>';
+                return;
+            }
+            
+            toolsList.innerHTML = tools.map(tool => `
+                <div class="tool-item" data-tool-id="${tool.id}" data-requires-oauth="${tool.requires_oauth || false}">
+                    <div class="tool-info">
+                        <span class="tool-status ${tool.enabled ? '' : 'inactive'}"></span>
+                        <span class="tool-name" title="${tool.description}">${tool.name}</span>
+                    </div>
+                    <button class="tool-toggle-btn ${tool.enabled ? 'remove' : 'add'}" 
+                            onclick="toggleTool('${tool.id}', ${!tool.enabled})">
+                        ${tool.enabled ? 'Remove' : 'Add'}
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        // OAuth modal state
+        let pendingOAuthToolId = null;
+        
+        function showOAuthModal(toolId) {
+            pendingOAuthToolId = toolId;
+            document.getElementById('oauthModal').classList.add('active');
+        }
+        
+        function closeOAuthModal() {
+            document.getElementById('oauthModal').classList.remove('active');
+            pendingOAuthToolId = null;
+            
+            // Reset button state
+            const toolItem = document.querySelector(`.tool-item[data-tool-id="${pendingOAuthToolId}"]`);
+            if (toolItem) {
+                const button = toolItem.querySelector('.tool-toggle-btn');
+                button.disabled = false;
+                button.textContent = 'Add';
+            }
+        }
+        
+        async function confirmOAuth() {
+            closeOAuthModal();
+            if (pendingOAuthToolId) {
+                await performToggleTool(pendingOAuthToolId, true);
+            }
+        }
+        
+        // Toggle tool enabled/disabled state
+        async function toggleTool(toolId, enable) {
+            const toolItem = document.querySelector(`.tool-item[data-tool-id="${toolId}"]`);
+            const button = toolItem.querySelector('.tool-toggle-btn');
+            
+            // Skip OAuth modal - proceed directly with tool addition
+            await performToggleTool(toolId, enable);
+        }
+        
+        async function performToggleTool(toolId, enable) {
+            const toolItem = document.querySelector(`.tool-item[data-tool-id="${toolId}"]`);
+            const button = toolItem.querySelector('.tool-toggle-btn');
+            
+            // Disable button during request
+            button.disabled = true;
+            button.textContent = enable ? 'Adding...' : 'Removing...';
+            
+            try {
+                const response = await fetch(`/api/tools/${toolId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: enable ? 'add' : 'remove' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI
+                    const status = toolItem.querySelector('.tool-status');
+                    if (enable) {
+                        status.classList.remove('inactive');
+                        button.classList.remove('add');
+                        button.classList.add('remove');
+                        button.textContent = 'Remove';
+                    } else {
+                        status.classList.add('inactive');
+                        button.classList.remove('remove');
+                        button.classList.add('add');
+                        button.textContent = 'Add';
+                    }
+                    
+                    console.log(`Tool ${toolId} ${enable ? 'added' : 'removed'} - workflow reloaded`);
+                } else {
+                    alert(`Failed to ${enable ? 'add' : 'remove'} tool: ${data.error}`);
+                    button.textContent = enable ? 'Add' : 'Remove';
+                }
+            } catch (error) {
+                console.error('Error toggling tool:', error);
+                alert(`Error ${enable ? 'adding' : 'removing'} tool`);
+                button.textContent = enable ? 'Add' : 'Remove';
+            }
+            
+            button.disabled = false;
+        }
+        
+        // Model settings - matches llm_connector.py providers
+        function updateModelOptions() {
+            const provider = document.getElementById('providerSelect').value;
+            const modelSelect = document.getElementById('modelSelect');
+            
+            const models = {
+                'azure': [
+                    { value: 'gpt-4o-ReCast', label: 'GPT-4o ReCast' },
+                    { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+                    { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' }
+                ],
+                'google': [
+                    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+                    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+                    { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+                    { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash' },
+                    { value: 'gemini-pro', label: 'Gemini Pro' }
+                ],
+                'ollama': [
+                    { value: 'llama3.2', label: 'Llama 3.2' },
+                    { value: 'llama3.1', label: 'Llama 3.1' },
+                    { value: 'mistral', label: 'Mistral' },
+                    { value: 'codellama', label: 'Code Llama' },
+                    { value: 'phi3', label: 'Phi-3' },
+                    { value: 'qwen2.5', label: 'Qwen 2.5' }
+                ]
+            };
+            
+            modelSelect.innerHTML = models[provider].map(m => 
+                `<option value="${m.value}">${m.label}</option>`
+            ).join('');
+        }
+        
+        // Get current model settings
+        function getModelSettings() {
+            return {
+                provider: document.getElementById('providerSelect').value,
+                model: document.getElementById('modelSelect').value,
+                temperature: parseFloat(document.getElementById('temperatureRange').value)
+            };
+        }
+
+        function updateTemperatureDisplay() {
+            const range = document.getElementById('temperatureRange');
+            document.getElementById('temperatureValue').textContent = range.value;
+        }
+
+        function applyModelSettings() {
+            const provider = document.getElementById('providerSelect').value;
+            const model = document.getElementById('modelSelect').value;
+            const temperature = document.getElementById('temperatureRange').value;
+            
+            console.log('Model settings:', { provider, model, temperature });
+            
+            // Send to backend
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider, model, temperature: parseFloat(temperature) })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Model settings applied successfully!');
+                }
+            }).catch(err => {
+                console.log('Settings saved locally:', { provider, model, temperature });
+            });
+        }
+
+        function toggleSendButton() {
+            const messageInput = document.getElementById("messageInput");
+            const sendButton = document.getElementById("sendButton");
+            
+            if (messageInput.value.trim().length > 0) {
+                sendButton.classList.add("enabled");
+                sendButton.style.cursor = "pointer";
+            } else {
+                sendButton.classList.remove("enabled");
+                sendButton.style.cursor = "not-allowed";
+            }
+        }
+
+        function handleEnterKey(event) {
+            // Send message on Enter, new line on Shift+Enter
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                deployMessage();
+            }
+        }
+
+        function addMessageToChat(message, isUser = true, metadata = null) {
+            const chatMessages = document.getElementById("chatMessages");
+            const chatContainer = document.querySelector(".chat-container");
+            
+            // Show chat interface on first message
+            if (!chatMessages.classList.contains('active')) {
+                chatMessages.classList.add('active');
+                chatContainer.classList.add('chat-active');
+            }
+            
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+            
+            let metadataHtml = '';
+            if (metadata && !isUser) {
+                metadataHtml = `<div class="message-metadata">
+                    ${metadata.handled_by ? `Handled by: ${metadata.handled_by}` : ''}
+                </div>`;
+            }
+            
+            // Render markdown for assistant messages, plain text for user
+            let renderedMessage = message;
+            if (!isUser && typeof marked !== 'undefined') {
+                try {
+                    renderedMessage = marked.parse(message);
+                } catch (e) {
+                    console.error('Markdown parsing error:', e);
+                    renderedMessage = message;
+                }
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${renderedMessage}
+                    ${metadataHtml}
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Auto-scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showLoading(show) {
+            const sendButton = document.getElementById("sendButton");
+            const sendIcon = document.getElementById("sendIcon");
+            const loadingSpinner = document.getElementById("loadingSpinner");
+            const chatMessages = document.getElementById("chatMessages");
+            
+            if (show) {
+                sendButton.classList.add("loading");
+                sendIcon.style.display = "none";
+                loadingSpinner.style.display = "block";
+                
+                // Add "AIDA is thinking" message
+                const thinkingDiv = document.createElement("div");
+                thinkingDiv.className = "message assistant";
+                thinkingDiv.id = "thinking-message";
+                thinkingDiv.innerHTML = `
+                    <div class="aida-thinking-message">
+                        <div class="aida-thinking-spinner"></div>
+                        <div class="aida-thinking-text">AIDA is thinking...</div>
+                    </div>
+                `;
+                chatMessages.appendChild(thinkingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else {
+                sendButton.classList.remove("loading");
+                sendIcon.style.display = "block";
+                loadingSpinner.style.display = "none";
+                
+                // Remove "AIDA is thinking" message
+                const thinkingMessage = document.getElementById("thinking-message");
+                if (thinkingMessage) {
+                    thinkingMessage.remove();
+                }
+            }
+        }
+
+        async function deployMessage() {
+            const messageInput = document.getElementById("messageInput");
+            const sendButton = document.getElementById("sendButton");
+            
+            if (messageInput.value.trim().length > 0) {
+                const userMessage = messageInput.value.trim();
+                
+                // Add user message to chat
+                addMessageToChat(userMessage, true);
+                
+                // Clear input immediately
+                messageInput.value = "";
+                toggleSendButton();
+                
+                // Disable input and show loading
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+                showLoading(true);
+                
+                try {
+                    // Get current model settings
+                    const modelSettings = getModelSettings();
+                    
+                    // Send message to backend with model settings
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            message: userMessage,
+                            provider: modelSettings.provider,
+                            model: modelSettings.model,
+                            temperature: modelSettings.temperature
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Add AIDA response to chat
+                        addMessageToChat(data.response, false, data.metadata);
+                    } else {
+                        addMessageToChat(`Error: ${data.error}`, false);
+                    }
+                } catch (error) {
+                    console.error("Network error:", error);
+                    addMessageToChat("Failed to send message. Please try again.", false);
+                }
+                
+                // Re-enable input and hide loading
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                showLoading(false);
+                messageInput.focus();
+            }
+        }
+
+        // Track uploaded attachments
+        let uploadedAttachments = [];
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'pdf': '<svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20a2,2 0 0,0 2,2H18a2,2 0 0,0 2,-2V8L14,2M18,20H6V4h8v4h4V20M8,15.5h2v2H8v-2m6,0h2v2H14v-2m-6,-4h2v2H8v-2m6,0h2v2H14v-2Z"/></svg>',
+                'doc': '<svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20a2,2 0 0,0 2,2H18a2,2 0 0,0 2,-2V8L14,2M18,20H6V4h8v4h4V20M10,19h2v-2h-2v2m4,-4h-8v2h8v-2m0,-4h-8v2h8v-2Z"/></svg>',
+                'docx': '<svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20a2,2 0 0,0 2,2H18a2,2 0 0,0 2,-2V8L14,2M18,20H6V4h8v4h4V20M10,19h2v-2h-2v2m4,-4h-8v2h8v-2m0,-4h-8v2h8v-2Z"/></svg>',
+                'txt': '<svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20a2,2 0 0,0 2,2H18a2,2 0 0,0 2,-2V8L14,2M18,20H6V4h8v4h4V20M8,15.5h8v-1H8v1m0,3h8v-1H8v1m0,-5h8v-1H8v1Z"/></svg>',
+                'json': '<svg viewBox="0 0 24 24"><path d="M5,3C3.89,3 3,3.9 3,5V19a2,2 0 0,0 2,2h14a2,2 0 0,0 2,-2V5C21,3.89 20.1,3 19,3H5m0,2h14V19H5V5m2,4h2v2H7V9m4,0h2v2h-2V9m4,0h2v2h-2V9m-8,4h8v2H7v-2Z"/></svg>',
+                'py': '<svg viewBox="0 0 24 24"><path d="M12,2C11.5,2 11,2.19 10.59,2.59L2.59,10.59C1.8,11.37 1.8,12.63 2.59,13.41L10.59,21.41C11.37,22.2 12.63,22.2 13.41,21.41L21.41,13.41C22.2,12.63 22.2,11.37 21.41,10.59L13.41,2.59C13,2.19 12.5,2 12,2M7.12,11L12,15.88L16.88,11L12,6.12M9,8H11V10H9V8M13,8H15V10H13V8Z"/></svg>',
+                'sql': '<svg viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.9 3,5V19a2,2 0 0,0 2,2h14c1.1,0 2,-0.9 2,-2V5C21,3.89 20.1,3 19,3M9,17H7V10h2V17m4,0H11V10h2V17m4,0H15V10h2V17Z"/></svg>',
+                'md': '<svg viewBox="0 0 24 24"><path d="M9.6,14L12,10.7L14.4,14M6,17.6V9.4C6,8.6 6.6,8 7.4,8H16.6A1.4,1.4 0 0,1 18,9.4V17.6C18,18.4 17.4,19 16.6,19H7.4C6.6,19 6,18.4 6,17.6Z"/></svg>',
+                'csv': '<svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20a2,2 0 0,0 2,2H18a2,2 0 0,0 2,-2V8L14,2M18,20H6V4h8v4h4V20M8,9h8v2H8V9m0,4h8v2H8V13m0,4h8v2H8V17Z"/></svg>',
+                'xlsx': '<svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20a2,2 0 0,0 2,2H18a2,2 0 0,0 2,-2V8L14,2M18,20H6V4h8v4h4V20M8,9h8v2H8V9m0,4h8v2H8V13m0,4h8v2H8V17Z"/></svg>',
+                'java': '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>',
+                'js': '<svg viewBox="0 0 24 24"><path d="M3,3H21V21H3V3M7,8H9V16H7V8M11,8H15a2,2 0 0,1 2,2v3a2,2 0 0,1-2,2H13v1h2v2H11V8Z"/></svg>'
+            };
+            return iconMap[ext] || '<svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20a2,2 0 0,0 2,2H18a2,2 0 0,0 2,-2V8L14,2M18,20H6V4h8v4h4V20Z"/></svg>';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 10) / 10 + ' ' + sizes[i];
+        }
+
+        function addAttachmentChip(file, success = true, chunksStored = 0, loading = false) {
+            const container = document.getElementById('attachmentsContainer');
+            const chipId = 'chip-' + Date.now() + Math.random();
+            
+            const chip = document.createElement('div');
+            chip.className = `attachment-chip ${loading ? 'loading' : (success ? 'success' : 'error')}`;
+            chip.id = chipId;
+            chip.dataset.loading = loading ? 'true' : 'false';
+            
+            const fileSize = formatFileSize(file.size);
+            let label, statusContent;
+            
+            if (loading) {
+                label = 'Processing...';
+                statusContent = '<div class="spinner"></div>';
+            } else if (success) {
+                label = 'Vectorized';
+                statusContent = '';
+            } else {
+                label = 'Failed';
+                statusContent = '';
+            }
+            
+            chip.innerHTML = `
+                <div class="chip-icon">
+                    ${getFileIcon(file.name)}
+                </div>
+                <div class="chip-name" title="${file.name}">
+                    ${file.name}
+                </div>
+                <div class="chip-status">
+                    ${statusContent}
+                </div>
+                <div class="chip-size">
+                    ${label}
+                </div>
+                <button class="remove-btn" onclick="removeAttachment('${chipId}', '${file.name}')">
+                    <svg viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/></svg>
+                </button>
+            `;
+            
+            container.appendChild(chip);
+            container.classList.add('has-attachments');
+            
+            // Store attachment info
+            uploadedAttachments.push({
+                id: chipId,
+                name: file.name,
+                success: success,
+                chunksStored: chunksStored,
+                loading: loading
+            });
+            
+            // Auto-remove error chips after 3 seconds
+            if (!success && !loading) {
+                setTimeout(() => {
+                    removeAttachment(chipId, file.name);
+                }, 3000);
+            }
+            
+            return chipId; // Return chip ID for later updates
+        }
+        
+        function updateAttachmentChip(chipId, success = true, chunksStored = 0) {
+            const chip = document.getElementById(chipId);
+            if (!chip) return;
+            
+            const file = uploadedAttachments.find(a => a.id === chipId);
+            if (!file) return;
+            
+            // Update class
+            chip.className = `attachment-chip ${success ? 'success' : 'error'}`;
+            chip.dataset.loading = 'false';
+            
+            // Update label
+            const sizeElement = chip.querySelector('.chip-size');
+            const statusElement = chip.querySelector('.chip-status');
+            
+            if (sizeElement) {
+                sizeElement.textContent = success ? 'Vectorized' : 'Failed';
+            }
+            if (statusElement) {
+                statusElement.innerHTML = '';
+            }
+            
+            // Update tracking
+            const attachment = uploadedAttachments.find(a => a.id === chipId);
+            if (attachment) {
+                attachment.success = success;
+                attachment.chunksStored = chunksStored;
+                attachment.loading = false;
+            }
+            
+            // Auto-remove error chips after 3 seconds
+            if (!success) {
+                setTimeout(() => {
+                    removeAttachment(chipId, file.name);
+                }, 3000);
+            }
+        }
+
+        function removeAttachment(chipId, filename) {
+            const chip = document.getElementById(chipId);
+            if (chip) {
+                chip.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => {
+                    chip.remove();
+                    
+                    // Remove from tracking
+                    uploadedAttachments = uploadedAttachments.filter(a => a.id !== chipId);
+                    
+                    // Hide container if no attachments
+                    const container = document.getElementById('attachmentsContainer');
+                    if (uploadedAttachments.length === 0) {
+                        container.classList.remove('has-attachments');
+                    }
+                }, 300);
+            }
+        }
+
+        function handleAttachment() {
+            // Create file input element that accepts multiple files
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.multiple = true;
+            fileInput.accept = '.pdf,.docx,.doc,.txt,.md,.json,.yaml,.yml,.xml,.sql,.py,.js,.java,.cpp,.c,.cs,.php,.go,.rs,.csv,.xlsx';
+            
+            fileInput.onchange = async (e) => {
+                const files = e.target.files;
+                if (files.length === 0) return;
+                
+                // Show loading state
+                const attachBtn = document.querySelector('.attach-btn');
+                attachBtn.disabled = true;
+                attachBtn.style.opacity = '0.5';
+                
+                // Create map of file names to chip IDs for later updates
+                const chipIds = {};
+                
+                try {
+                    // First, show all files immediately with loading spinner
+                    for (let file of files) {
+                        const chipId = addAttachmentChip(file, false, 0, true); // Show with loading spinner
+                        chipIds[file.name] = chipId;
+                    }
+                    
+                    // Create FormData and append files
+                    const formData = new FormData();
+                    for (let file of files) {
+                        formData.append('files', file);
+                    }
+                    
+                    // Upload to /api/upload endpoint
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Update chips with vectorization results
+                        for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
+                            const isSuccess = data.results[i] && data.results[i].success;
+                            const chunksStored = isSuccess ? (data.total_chunks / files.length) : 0;
+                            const chipId = chipIds[file.name];
+                            
+                            if (chipId) {
+                                updateAttachmentChip(chipId, isSuccess, chunksStored);
+                            }
+                        }
+                        
+                        console.log('Upload successful:', data);
+                    } else {
+                        // Update all chips to failed
+                        for (let file of files) {
+                            const chipId = chipIds[file.name];
+                            if (chipId) {
+                                updateAttachmentChip(chipId, false, 0);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    // Update all chips to failed
+                    for (let file of files) {
+                        const chipId = chipIds[file.name];
+                        if (chipId) {
+                            updateAttachmentChip(chipId, false, 0);
+                        }
+                    }
+                } finally {
+                    // Re-enable attach button
+                    attachBtn.disabled = false;
+                    attachBtn.style.opacity = '1';
+                }
+            };
+            
+            fileInput.click();
+        }
+    </script>
+
+    <!-- OAuth Confirmation Modal -->
+    <div id="oauthModal" class="oauth-modal-overlay">
+        <div class="oauth-modal">
+            <div class="oauth-modal-header">
+                <div class="oauth-modal-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.75 3a.75.75 0 01.743.648l.007.102v5.69l4.574-3.2a.75.75 0 01.935 1.17l-.078.063-5.681 3.977 5.68 3.977a.75.75 0 01-.78 1.277l-.077-.044-4.573-3.2v5.69a.75.75 0 01-1.493.102l-.007-.102v-5.69l-4.574 3.2a.75.75 0 01-.935-1.17l.078-.063 5.681-3.977-5.68-3.977a.75.75 0 01.78-1.277l.077.044 4.573 3.2V3.75A.75.75 0 0111.75 3z"/>
+                    </svg>
+                </div>
+                <h3 class="oauth-modal-title">Connect to Atlassian</h3>
+            </div>
+            <div class="oauth-modal-body">
+                <p>This tool requires OAuth authentication with Atlassian. A browser window will open to complete the authorization.</p>
+                <ul>
+                    <li>Secure OAuth 2.0 authentication</li>
+                    <li>Access to your Jira and Confluence</li>
+                    <li>You can revoke access anytime</li>
+                </ul>
+            </div>
+            <div class="oauth-modal-actions">
+                <button class="oauth-btn oauth-btn-cancel" onclick="closeOAuthModal()">Cancel</button>
+                <button class="oauth-btn oauth-btn-confirm" onclick="confirmOAuth()">Connect</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
